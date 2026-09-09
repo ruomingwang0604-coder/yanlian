@@ -1,20 +1,34 @@
 {
   "name": "expression-trainer",
-  "productName": "宇宙无敌表达训练",
-  "version": "1.0.0",
-  "description": "宇宙无敌表达训练系统 - 本地桌面版",
+  "productName": "言练",
+  "version": "0.1.0",
+  "description": "言练 - 基于本地语音识别的表达训练桌面应用",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --dev"
+    "dev": "electron . --dev",
+    "check": "node scripts/check-project.js"
   },
-  "keywords": ["expression", "training", "speech", "asr", "chinese"],
-  "author": "sisi",
+  "keywords": [
+    "expression",
+    "training",
+    "speech",
+    "asr",
+    "chinese"
+  ],
+  "author": "Yanlian contributors",
   "license": "MIT",
   "devDependencies": {
     "electron": "^33.0.0"
   },
   "dependencies": {
     "sherpa-onnx-node": "^1.10.0"
+  },
+  "private": true,
+  "contributors": [
+    "Sisi (original author)"
+  ],
+  "engines": {
+    "node": ">=18"
   }
 }

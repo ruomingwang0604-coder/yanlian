@@ -6,7 +6,7 @@ const { loadLexicon, analyzeText } = require('./lib/lexicon');
 const { sendFeedback, sendReport, testConnection } = require('./lib/ai-feedback');
 
 // 覆盖应用显示名称（菜单栏、Dock、任务栏、窗口标题）
-app.setName('宇宙无敌表达训练');
+app.setName('言练');
 
 let mainWindow;
 let settingsWindow;
@@ -100,7 +100,7 @@ function createMainWindow() {
     width: 1200,
     height: 800,
     backgroundColor: '#000000',
-    title: '宇宙无敌表达训练',
+    title: '言练 · 表达训练台',
     titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -322,12 +322,12 @@ ipcMain.handle('get-realtime-feedback', async (event, text) => {
   }
 });
 
-ipcMain.handle('get-final-report', async (event, { fullText, stats }) => {
+ipcMain.handle('get-final-report', async (event, { fullText, stats, context }) => {
   const settings = loadSettings();
   const providerConfig = getCurrentProviderSettings(settings);
   const customPrompt = loadCustomPrompt();
   try {
-    const report = await sendReport(fullText, stats, { ...settings, ...providerConfig }, customPrompt);
+    const report = await sendReport(fullText, stats, { ...settings, ...providerConfig }, customPrompt, context);
     return { success: true, report };
   } catch (error) {
     return { success: false, error: error.message };

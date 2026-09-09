@@ -3,145 +3,305 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>宇宙无敌表达训练系统</title>
+  <title>言练 · 表达训练台</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <!-- 洋红闪烁边框 -->
-  <div class="glow-border"></div>
-
-  <!-- 主布局：三列 -->
+<body data-state="idle">
   <div class="layout">
-    <!-- 左栏：表达分析 -->
-    <aside class="panel-left">
-      <div class="panel-title">📊 表达分析</div>
-      <div class="stat-row">
-        <span class="stat-label">笼统词</span>
-        <span id="stat-vague" class="stat-value stat-red">0</span>
+    <aside class="panel-left" aria-label="表达数据概览">
+      <div class="panel-heading">
+        <span class="panel-eyebrow">SESSION SIGNAL</span>
+        <h2 class="panel-title">表达分析</h2>
       </div>
-      <div class="stat-row">
-        <span class="stat-label">填充词</span>
-        <span id="stat-fillers" class="stat-value stat-orange">0</span>
+      <div class="stats-grid">
+        <div class="stat-row stat-danger">
+          <span class="stat-label">笼统词</span>
+          <span id="stat-vague" class="stat-value">0</span>
+        </div>
+        <div class="stat-row stat-warning">
+          <span class="stat-label">填充词</span>
+          <span id="stat-fillers" class="stat-value">0</span>
+        </div>
+        <div class="stat-row stat-caution">
+          <span class="stat-label">犹豫词</span>
+          <span id="stat-hedges" class="stat-value">0</span>
+        </div>
+        <div class="stat-row stat-positive">
+          <span class="stat-label">表达密度</span>
+          <span id="stat-density" class="stat-value">--</span>
+        </div>
       </div>
-      <div class="stat-row">
-        <span class="stat-label">犹豫词</span>
-        <span id="stat-hedges" class="stat-value stat-yellow">0</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">表达密度</span>
-        <span id="stat-density" class="stat-value stat-green">--</span>
+      <div class="session-meta" aria-label="本次训练信息">
+        <div><span>字数</span><strong id="word-count">0</strong></div>
+        <div><span>句子</span><strong id="sentence-count">0</strong></div>
       </div>
     </aside>
 
-    <!-- 中间：主内容区 -->
     <main class="main-area">
-      <!-- 顶部栏 -->
-      <div class="topbar">
-        <span class="app-title">宇宙无敌表达训练系统</span>
+      <header class="topbar">
+        <div class="brand-block">
+          <span class="brand-mark" aria-hidden="true">ET</span>
+          <div>
+            <span class="app-title">言练 · 表达训练台</span>
+            <span class="app-subtitle">把模糊的表达，练成清晰的观点</span>
+          </div>
+        </div>
         <div class="topbar-right">
-          <span id="timer" class="timer">00:00</span>
-          <button id="btn-prompt-editor" class="btn-icon" title="训练规则">🎯</button>
-          <button id="btn-settings" class="btn-icon" title="设置">⚙️</button>
+          <div id="app-status" class="status-pill" role="status" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="status-label">准备就绪</span>
+          </div>
+          <span id="timer" class="timer" aria-label="录制时长">00:00</span>
+          <button id="btn-prompt-editor" class="btn-icon" type="button" title="训练规则" aria-label="打开训练规则">规则</button>
+          <button id="btn-settings" class="btn-icon" type="button" title="设置" aria-label="打开设置">设置</button>
         </div>
+      </header>
+
+      <div class="workspace-labels" aria-hidden="true">
+        <span>TRANSCRIPT</span>
+        <span id="status-detail">模型与麦克风将在开始录制时检查</span>
       </div>
 
-      <!-- 字幕区顶部工具栏 -->
       <div class="subtitle-topbar">
-        <button id="btn-paste" class="btn-sm btn-paste-top">
-          <span>📋</span> 粘贴逐字稿
-        </button>
+        <div class="training-entry-actions">
+          <button id="btn-topic-practice" class="btn-sm btn-topic-entry" type="button">
+            <span aria-hidden="true">↗</span> 抽取演讲话题
+          </button>
+          <button id="btn-paste" class="btn-sm btn-paste-top" type="button">
+            <span aria-hidden="true">＋</span> 导入逐字稿
+          </button>
+        </div>
         <div class="subtitle-topbar-right">
-          <button id="btn-copy-text" class="btn-sm hidden" title="复制原文">📋 复制</button>
-          <button id="btn-save-text" class="btn-sm hidden" title="保存原文">💾 保存</button>
-          <button id="btn-clear" class="btn-sm hidden" title="清空">🗑️ 清空</button>
+          <button id="btn-copy-text" class="btn-sm hidden" type="button" title="复制原文">复制</button>
+          <button id="btn-save-text" class="btn-sm hidden" type="button" title="保存原文">保存</button>
+          <button id="btn-clear" class="btn-sm btn-danger-ghost hidden" type="button" title="清空本次内容">清空</button>
         </div>
       </div>
 
-      <!-- 字幕滚动区 -->
-      <div id="subtitle-scroll" class="subtitle-scroll">
-        <div id="subtitle-container" class="subtitle-container">
-          <div class="subtitle-line hint">点击下方按钮开始说话</div>
+      <section id="subtitle-scroll" class="subtitle-scroll" aria-label="实时识别字幕" aria-live="polite">
+        <div id="challenge-banner" class="challenge-banner hidden" aria-live="polite">
+          <div class="challenge-banner-index">
+            <span id="challenge-banner-code">TOPIC 000</span>
+            <small id="challenge-banner-stage">5 MIN SPEECH</small>
+          </div>
+          <div class="challenge-banner-copy">
+            <span id="challenge-banner-category">主题训练</span>
+            <strong id="challenge-banner-title">演讲话题</strong>
+          </div>
+          <button id="btn-view-challenge-notes" class="btn-sm" type="button">查看提纲</button>
         </div>
+        <div id="subtitle-empty" class="empty-state">
+          <div class="empty-visual" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <h1>开始一次有目标的表达训练</h1>
+          <p>先抽取一个话题，准备 15 分钟并完成 5 分钟演讲；也可以选择自由录制。</p>
+          <div class="empty-actions">
+            <span>推荐：抽题后完成 15 + 5 训练</span>
+            <span><kbd>Space</kbd> 自由录制 / 暂停</span>
+          </div>
+        </div>
+        <div id="subtitle-container" class="subtitle-container"></div>
+      </section>
+
+      <div class="legend" aria-label="文字标记说明">
+        <span><i class="legend-dot filler-dot"></i>填充词</span>
+        <span><i class="legend-dot hedge-dot"></i>犹豫词</span>
+        <span><i class="legend-dot vague-dot"></i>笼统词</span>
       </div>
 
-      <!-- 底部按钮（只保留核心操作） -->
-      <div class="action-bar">
-        <button id="btn-start" class="btn-main btn-start">
-          <span class="btn-icon-inner">🎤</span>
-          <span class="btn-label">开始录制</span>
+      <div class="action-bar" aria-label="录制操作">
+        <button id="btn-start" class="btn-main btn-secondary btn-free-record" type="button">
+          <span class="btn-record-dot" aria-hidden="true"></span>
+          <span class="btn-label">自由录制</span>
         </button>
-        <button id="btn-pause" class="btn-main btn-pause hidden">
-          <span class="btn-icon-inner">⏸️</span>
+        <button id="btn-pause" class="btn-main btn-secondary hidden" type="button">
+          <span class="btn-icon-inner" aria-hidden="true">Ⅱ</span>
           <span class="btn-label">暂停</span>
         </button>
-        <button id="btn-resume" class="btn-main btn-resume hidden">
-          <span class="btn-icon-inner">▶️</span>
-          <span class="btn-label">继续</span>
+        <button id="btn-resume" class="btn-main btn-start hidden" type="button">
+          <span class="btn-icon-inner" aria-hidden="true">▶</span>
+          <span class="btn-label">继续录制</span>
         </button>
-        <button id="btn-stop" class="btn-main btn-stop hidden">
-          <span class="btn-icon-inner">⏹️</span>
-          <span class="btn-label">结束</span>
+        <button id="btn-stop" class="btn-main btn-stop hidden" type="button">
+          <span class="btn-stop-square" aria-hidden="true"></span>
+          <span class="btn-label">结束训练</span>
         </button>
-        <button id="btn-report" class="btn-main btn-report hidden">
-          <span class="btn-icon-inner">📋</span>
-          <span class="btn-label">生成报告</span>
+        <button id="btn-report" class="btn-main btn-report hidden" type="button">
+          <span aria-hidden="true">↗</span>
+          <span class="btn-label">生成训练报告</span>
         </button>
       </div>
     </main>
 
-    <!-- 右栏：实时反馈 -->
-    <aside class="panel-right">
-      <div class="panel-title">💡 实时反馈</div>
-      <div id="feedback-content" class="feedback-content">
-        <!-- 实时反馈内容 -->
+    <aside class="panel-right" aria-label="实时反馈">
+      <div class="panel-heading panel-heading-row">
+        <div>
+          <span class="panel-eyebrow">LIVE COACH</span>
+          <h2 class="panel-title">实时反馈</h2>
+        </div>
+        <span class="live-indicator" aria-hidden="true"></span>
+      </div>
+      <div id="feedback-content" class="feedback-content" aria-live="polite">
+        <div id="feedback-empty" class="feedback-empty">
+          <span class="feedback-empty-icon" aria-hidden="true">↳</span>
+          <strong>反馈会出现在这里</strong>
+          <p>完成一句话后，系统会提示填充词、犹豫词和更精准的表达方式。</p>
+        </div>
       </div>
     </aside>
   </div>
 
-  <!-- 耳机DJ少女 icon -->
-  <div class="girl-icon">
-    <svg width="44" height="44" viewBox="0 0 70 70" fill="none">
-      <path d="M16 32 Q16 14 35 12 Q54 14 54 32" stroke="#E5007E" stroke-width="2.5" fill="none"/>
-      <rect x="12" y="30" width="7" height="12" rx="3" fill="#E5007E" opacity="0.6"/>
-      <rect x="51" y="30" width="7" height="12" rx="3" fill="#E5007E" opacity="0.6"/>
-      <circle cx="35" cy="38" r="14" stroke="#E5007E" stroke-width="2" fill="none"/>
-      <path d="M28 36 Q32 33 36 36" stroke="#E5007E" stroke-width="1.5" fill="none"/>
-      <path d="M38 36 Q41 34 44 37" stroke="#E5007E" stroke-width="1.5" fill="none"/>
-      <circle cx="32" cy="35.5" r="1.2" fill="#E5007E"/>
-      <path d="M31 43 Q35 46 39 43" stroke="#E5007E" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    </svg>
-  </div>
+  <div id="topic-modal" class="modal topic-modal hidden" role="dialog" aria-modal="true" aria-labelledby="topic-modal-title">
+    <div class="modal-content topic-modal-content">
+      <header class="topic-modal-header">
+        <div>
+          <span class="panel-eyebrow">GUIDED SPEECH · 15 + 5</span>
+          <h2 id="topic-modal-title">主题演讲训练</h2>
+        </div>
+        <button id="btn-close-topic" class="btn-close" type="button" aria-label="退出主题训练">×</button>
+      </header>
 
-  <!-- 粘贴逐字稿弹窗 -->
-  <div id="paste-modal" class="modal hidden">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>📋 粘贴逐字稿</h2>
-        <button id="btn-close-paste" class="btn-close">×</button>
+      <div class="topic-stepper" aria-label="训练步骤">
+        <div class="topic-step active" data-topic-step="draw"><b>01</b><span>抽取话题</span></div>
+        <div class="topic-step" data-topic-step="prepare"><b>02</b><span>准备 15 分钟</span></div>
+        <div class="topic-step" data-topic-step="speak"><b>03</b><span>演讲 5 分钟</span></div>
       </div>
-      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
-        <p style="color:#888;font-size:13px;">把逐字稿粘贴进来，我帮你分析</p>
-        <textarea id="paste-textarea" placeholder="在这里粘贴文字..." style="flex:1;min-height:300px;background:#0a0a0a;border:1px solid #333;border-radius:8px;padding:16px;color:#fff;font-size:14px;line-height:1.8;resize:none;font-family:inherit;"></textarea>
-        <button id="btn-analyze-paste" style="background:#E5007E;color:#fff;border:none;border-radius:8px;padding:12px 20px;font-size:14px;cursor:pointer;align-self:flex-end;">🔍 开始分析</button>
+
+      <div class="topic-stage-wrap">
+        <section id="topic-stage-draw" class="topic-stage">
+          <div class="topic-stage-intro">
+            <span class="topic-kicker">100 TOPICS / 10 CATEGORIES</span>
+            <h3>不是随便开口，<br>先给表达一个明确任务。</h3>
+            <p>从高频公共表达场景中抽取一个题目。确定后有 15 分钟准备，再完成一段最长 5 分钟的演讲。</p>
+          </div>
+
+          <div class="topic-draw-area">
+            <div class="topic-filter-row">
+              <label for="topic-category">话题范围</label>
+              <select id="topic-category" aria-label="选择话题分类">
+                <option value="全部">全部分类</option>
+              </select>
+              <span id="topic-library-count">100 个话题</span>
+            </div>
+
+            <article id="topic-card" class="topic-card is-empty" aria-live="polite">
+              <div class="topic-card-meta">
+                <span id="topic-card-number">NO. ———</span>
+                <span id="topic-card-category">RANDOM DRAW</span>
+              </div>
+              <h3 id="topic-card-title">点击按钮，抽取一个演讲话题</h3>
+              <p id="topic-card-prompt">抽题前可以选择方向，也可以保留“全部分类”进行完全随机抽取。</p>
+              <div id="topic-card-angles" class="topic-card-angles hidden"></div>
+            </article>
+
+            <div class="topic-draw-actions">
+              <button id="btn-draw-topic" class="btn-main btn-topic-draw" type="button">随机抽一题</button>
+              <button id="btn-accept-topic" class="btn-main btn-secondary hidden" type="button">接受话题 · 开始准备</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="topic-stage-prepare" class="topic-stage topic-prepare-stage hidden">
+          <aside class="topic-brief">
+            <span id="prepare-topic-number" class="topic-kicker">TOPIC 000</span>
+            <span id="prepare-topic-category" class="topic-category-label">话题分类</span>
+            <h3 id="prepare-topic-title">演讲话题</h3>
+            <p id="prepare-topic-prompt">话题说明</p>
+            <div class="prepare-angle-list">
+              <span>建议思考</span>
+              <ol id="prepare-topic-angles"></ol>
+            </div>
+          </aside>
+
+          <div class="prepare-workspace">
+            <div class="prepare-clock-row">
+              <div>
+                <span class="topic-kicker">PREPARATION</span>
+                <strong id="prepare-timer">15:00</strong>
+              </div>
+              <p>先写关键词，不必写成逐字稿。</p>
+            </div>
+            <label class="notes-label" for="topic-notes">
+              <span>演讲提纲</span>
+              <small id="topic-notes-count">0 / 1200</small>
+            </label>
+            <textarea id="topic-notes" maxlength="1200" autocomplete="off" spellcheck="false" placeholder="只能手动输入。可以记下：&#10;&#10;01  我的核心观点&#10;02  一个例子或证据&#10;03  最后希望听众记住什么"></textarea>
+            <div class="notes-rule">
+              <span>PASTE DISABLED</span>
+              <p>为了保留真实的准备过程，这里不能粘贴或拖入文字。</p>
+            </div>
+            <div class="prepare-actions">
+              <button id="btn-redraw-topic" class="btn-main btn-secondary" type="button">返回重新抽题</button>
+              <button id="btn-start-topic-speech" class="btn-main btn-topic-draw" type="button">提前开始 5 分钟演讲</button>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
 
-  <!-- 报告弹窗 -->
-  <div id="report-modal" class="modal hidden">
-    <div class="modal-content">
+  <div id="challenge-notes-modal" class="modal challenge-notes-modal hidden" role="dialog" aria-modal="true" aria-labelledby="challenge-notes-title">
+    <div class="modal-content modal-compact challenge-notes-content">
       <div class="modal-header">
-        <h2>📋 表达分析报告</h2>
-        <div class="modal-header-actions">
-          <button id="btn-copy-report" class="btn-sm">📋 复制全文</button>
-          <button id="btn-close-report" class="btn-close">×</button>
+        <div>
+          <span class="panel-eyebrow">SPEAKER NOTES</span>
+          <h2 id="challenge-notes-title">本轮演讲提纲</h2>
+        </div>
+        <button id="btn-close-challenge-notes" class="btn-close" type="button" aria-label="关闭演讲提纲">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="challenge-notes-topic" class="challenge-notes-topic"></div>
+        <pre id="challenge-notes-text" class="challenge-notes-text"></pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="paste-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="paste-modal-title">
+    <div class="modal-content modal-compact">
+      <div class="modal-header">
+        <div>
+          <span class="panel-eyebrow">IMPORT TRANSCRIPT</span>
+          <h2 id="paste-modal-title">导入逐字稿</h2>
+        </div>
+        <button id="btn-close-paste" class="btn-close" type="button" aria-label="关闭导入窗口">×</button>
+      </div>
+      <div class="modal-body paste-modal-body">
+        <p class="modal-description">粘贴一段中文逐字稿，不需要录音也可以直接开始分析。</p>
+        <textarea id="paste-textarea" placeholder="在这里粘贴文字……" aria-label="逐字稿内容"></textarea>
+        <div class="modal-footer">
+          <span class="shortcut-hint"><kbd>⌘</kbd> + <kbd>Enter</kbd> 开始分析</span>
+          <button id="btn-analyze-paste" class="btn-main btn-start" type="button">开始分析</button>
         </div>
       </div>
-      <div id="report-body" class="modal-body">
+    </div>
+  </div>
+
+  <div id="report-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+    <div class="modal-content report-modal-content">
+      <div class="modal-header">
+        <div>
+          <span class="panel-eyebrow">SESSION REPORT</span>
+          <h2 id="report-modal-title">本轮训练报告</h2>
+        </div>
+        <div class="modal-header-actions">
+          <button id="btn-copy-report" class="btn-sm" type="button">复制全文</button>
+          <button id="btn-close-report" class="btn-close" type="button" aria-label="关闭报告">×</button>
+        </div>
+      </div>
+      <div id="report-body" class="modal-body report-body"></div>
+      <div id="report-action" class="report-action hidden">
+        <div class="report-action-copy">
+          <span class="panel-eyebrow">NEXT ROUND · 60 SEC</span>
+          <strong id="report-goal">把核心观点说得更直接</strong>
+          <p>先试试这个调整；下一轮仍会重新分析整段表达。</p>
+        </div>
+        <button id="btn-practice-again" class="btn-main btn-start" type="button">开始下一轮</button>
       </div>
     </div>
   </div>
 
+  <script src="speech-topics.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
