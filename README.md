@@ -182,6 +182,14 @@ npm run dev
 - 麦克风权限
 - （可选）网络连接（用于AI反馈，词库分析可离线）
 
+## 开源来源
+
+言练是基于 [expression-trainer](https://github.com/fxy2311-youyou/expression-trainer) 开发的独立改进版。
+
+本项目保留原作者的版权声明与 MIT License，并在此基础上使用独立的产品名称、品牌设计和迭代路线。
+
+感谢原作者提供的开源基础。言练当前由 [ruoming](https://github.com/ruomingwang0604-coder) 独立维护，与原项目作者不存在官方从属、合作或背书关系。
+
 ## License
 
 MIT
