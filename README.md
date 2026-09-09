@@ -3,7 +3,7 @@
 > 本仓库是基于 [fxy2311-youyou/expression-trainer](https://github.com/fxy2311-youyou/expression-trainer) 的独立改进版本，并非原项目的官方发行版。
 > 原项目与本项目均依照 MIT License 使用；原作者版权声明保留在 `LICENSE` 中。
 
-一个帮你训练口语表达精准度的本地桌面应用。实时语音识别 → 词库匹配 → AI反馈，全程离线+本地处理。
+一款面向中文演讲与口语表达训练的桌面应用。语音识别和词库分析在本机完成；使用 DeepSeek、OpenAI 等在线 AI 服务时，演讲逐字稿会发送给用户自行配置的服务商，使用 Ollama 时可保持完整本地处理。
 
 ## 项目状态
 
@@ -31,55 +31,67 @@
 
 ## 安装
 
-### 1. 克隆项目 & 安装依赖
+### 普通用户：macOS 测试安装包
+
+“言练”现在拥有独立应用 ID、图标和 DMG 构建流程。公开 Release 发布后，Apple Silicon Mac 用户可以直接下载 `Yanlian-<版本>-mac-arm64.dmg`，将“言练”拖入“应用程序”后启动，不需要安装 Node.js 或运行命令。
+
+当前测试包尚未经过 Apple 签名和公证，首次打开时 macOS 可能提示无法验证开发者。正式公开分发前会继续处理签名、公证和首次启动引导。
+
+当前安装包内置本地语音识别模型，因此文件体积较大；后续版本将改为首次启动时按需下载。
+
+### 开发者：从源码运行
 
 ```bash
-cd expression-trainer
+git clone https://github.com/ruomingwang0604-coder/yanlian.git
+cd yanlian
 npm install
 ```
 
-### 2. 下载语音识别模型
-
-需要下载 Sherpa-ONNX 的 streaming paraformer 中英双语模型：
+下载 Sherpa-ONNX streaming paraformer 中英双语模型：
 
 ```bash
 cd models
-
-# 方法一：使用 wget
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
 tar xvf sherpa-onnx-streaming-paraformer-bilingual-zh-en.tar.bz2
-
-# 方法二：使用 huggingface
-# https://huggingface.co/csukuangfj/sherpa-onnx-streaming-paraformer-bilingual-zh-en
+cd ..
 ```
 
-下载后 `models/` 目录应包含：
-```
+模型目录应为：
+
+```text
 models/
 └── sherpa-onnx-streaming-paraformer-bilingual-zh-en/
     ├── encoder.int8.onnx
     ├── decoder.int8.onnx
     └── tokens.txt
 ```
-### 3. 启动应用
+
+启动开发版：
 
 ```bash
 npm start
 ```
 
-### 4. 配置 AI 后端
+构建 Apple Silicon macOS 测试安装包：
+
+```bash
+npm run dist:mac
+```
+
+构建结果输出到 `dist/`。构建前需要确保上述模型目录完整。
+
+### 配置 AI 后端
 
 启动后点击右上角 ⚙️ 进入设置页面。
 
-推荐配置：
+| 后端 | 数据处理方式 | 说明 |
+|------|--------------|------|
+| DeepSeek | 在线 | 逐字稿发送到用户配置的 DeepSeek 服务 |
+| OpenAI | 在线 | 逐字稿发送到用户配置的 OpenAI 服务 |
+| Ollama | 本地 | 模型安装在本机时可完整本地处理 |
+| 自定义兼容接口 | 取决于服务地址 | 由用户自行确认服务的数据政策 |
 
-| 后端 | 费用 | 速度 | 获取方式 |
-|------|------|------|----------|
-| DeepSeek | 极低 | 快 | [platform.deepseek.com](https://platform.deepseek.com) |
-| OpenAI | 中等 | 快 | [platform.openai.com](https://platform.openai.com) |
-| Ollama | 免费 | 取决于硬件 | [ollama.com](https://ollama.com) 本地运行 |
-
-**推荐 deepseek**：生成报告质量高，且成本极低。
+API Key 保存在当前电脑的 Electron 用户数据目录中，不会提交到本项目仓库。准备阶段输入的演讲提纲不会发送给外部模型。
 
 ## 使用说明
 
@@ -163,8 +175,8 @@ npm run dev
 
 ## 系统要求
 
-- macOS 12+ / Windows 10+ / Linux
-- Node.js 18+
+- 测试安装包：macOS 12+、Apple Silicon
+- 源码运行：macOS / Windows / Linux，Node.js 18+
 - 麦克风权限
 - （可选）网络连接（用于AI反馈，词库分析可离线）
 

@@ -1,13 +1,15 @@
 {
-  "name": "expression-trainer",
+  "name": "yanlian-desktop",
   "productName": "言练",
   "version": "0.1.0",
-  "description": "言练 - 基于本地语音识别的表达训练桌面应用",
+  "description": "言练：面向中文演讲与口语表达训练的桌面应用",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "check": "node scripts/check-project.js"
+    "check": "node scripts/check-project.js",
+    "pack:mac": "electron-builder --dir --mac --arm64",
+    "dist:mac": "electron-builder --mac dmg --arm64"
   },
   "keywords": [
     "expression",
@@ -16,10 +18,11 @@
     "asr",
     "chinese"
   ],
-  "author": "Yanlian contributors",
+  "author": "ruoming",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^33.0.0"
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3"
   },
   "dependencies": {
     "sherpa-onnx-node": "^1.10.0"
@@ -30,5 +33,84 @@
   ],
   "engines": {
     "node": ">=18"
+  },
+  "homepage": "https://github.com/ruomingwang0604-coder/yanlian#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruomingwang0604-coder/yanlian.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ruomingwang0604-coder/yanlian/issues"
+  },
+  "build": {
+    "appId": "com.ruoming.yanlian",
+    "productName": "言练",
+    "artifactName": "Yanlian-${version}-mac-${arch}.${ext}",
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/sherpa-onnx-darwin-arm64/**/*",
+      "node_modules/sherpa-onnx-node/**/*"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "lib/**/*",
+      "src/**/*",
+      "data/**/*",
+      "LICENSE",
+      "NOTICE.md",
+      "THIRD_PARTY_NOTICES.md",
+      "licenses/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "models/sherpa-onnx-streaming-paraformer-bilingual-zh-en",
+        "to": "models/sherpa-onnx-streaming-paraformer-bilingual-zh-en",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.education",
+      "icon": "build/icon.icns",
+      "identity": null,
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "言练需要使用麦克风，将你的演讲在本机转换为文字并生成训练反馈。"
+      }
+    },
+    "dmg": {
+      "title": "言练 ${version}",
+      "window": {
+        "width": 540,
+        "height": 380
+      },
+      "contents": [
+        {
+          "x": 150,
+          "y": 190,
+          "type": "file"
+        },
+        {
+          "x": 390,
+          "y": 190,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
   }
 }

@@ -6,6 +6,8 @@ const root = join(__dirname, '..');
 const requiredFiles = [
   'LICENSE',
   'NOTICE.md',
+  'THIRD_PARTY_NOTICES.md',
+  'build/icon.icns',
   'CHANGELOG.md',
   'CONTRIBUTING.md',
   'docs/PROJECT.md',
@@ -23,6 +25,7 @@ const javascriptFiles = [
   'lib/ai-feedback.js',
   'lib/prompts.js',
   'src/app.js',
+  'src/speech-topics.js',
   'src/settings.js'
 ];
 
@@ -52,6 +55,25 @@ for (const file of javascriptFiles) {
 }
 
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+const expectedIdentity = {
+  name: 'yanlian-desktop',
+  productName: '言练',
+  appId: 'com.ruoming.yanlian'
+};
+if (
+  packageJson.name === expectedIdentity.name &&
+  packageJson.productName === expectedIdentity.productName &&
+  packageJson.build?.appId === expectedIdentity.appId
+) {
+  pass('言练独立应用身份完整');
+} else {
+  fail('言练应用名称、包名或 appId 配置不完整');
+}
+if (packageJson.build?.extraResources?.some(item => String(item.from || '').startsWith('models/'))) {
+  pass('安装包包含本地语音模型资源');
+} else {
+  fail('安装包未配置本地语音模型资源');
+}
 const packageLock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
 if (packageJson.version === packageLock.version && packageJson.version === packageLock.packages?.['']?.version) {
   pass(`版本一致 ${packageJson.version}`);

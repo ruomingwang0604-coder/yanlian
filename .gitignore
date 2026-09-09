@@ -10,3 +10,5 @@ prompt-playground.html
 listenhub-*.png
 models/*.tar.*
 work/
+
+build/icon.iconset/
