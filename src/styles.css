@@ -1491,3 +1491,75 @@ body[data-state="listening"] .live-indicator { background: var(--accent); box-sh
 .btn-free-record { min-width: 110px; }
 .btn-free-record .btn-record-dot { background: var(--accent); box-shadow: none; }
 .btn-free-record:hover .btn-record-dot { background: #fff; }
+
+/* ===== First launch model setup ===== */
+.model-setup {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background:
+    linear-gradient(90deg, rgba(10,10,10,.055) 1px, transparent 1px),
+    linear-gradient(rgba(10,10,10,.055) 1px, transparent 1px),
+    rgba(231, 231, 228, .98);
+  background-size: 42px 42px;
+  -webkit-app-region: drag;
+}
+.model-setup-card {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 560px);
+  width: min(760px, 92vw);
+  min-height: 480px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 32px 100px rgba(0,0,0,.18);
+  -webkit-app-region: no-drag;
+}
+.model-setup-index {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 24px;
+  border-right: 1px solid var(--line);
+  background: var(--accent);
+  color: #fff;
+}
+.model-setup-index span { font: 650 9px/1.5 "SF Mono", Menlo, monospace; letter-spacing: .16em; }
+.model-setup-index strong { font: 300 76px/1 "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: -.08em; }
+.model-setup-content { display: flex; flex-direction: column; padding: 45px 44px 36px; }
+.model-setup-content h1 { max-width: 430px; margin-top: 12px; color: var(--text); font-size: clamp(32px, 4vw, 48px); font-weight: 380; line-height: 1.04; letter-spacing: -.055em; }
+.model-setup-description { max-width: 500px; margin-top: 19px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.model-facts { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 31px; border-top: 2px solid var(--text); border-bottom: 1px solid var(--line); }
+.model-facts div { min-width: 0; padding: 13px 12px 14px 0; }
+.model-facts div + div { padding-left: 12px; border-left: 1px solid var(--line); }
+.model-facts span, .model-facts strong { display: block; }
+.model-facts span { color: var(--dim); font: 600 8px "SF Mono", Menlo, monospace; letter-spacing: .12em; }
+.model-facts strong { margin-top: 7px; font-size: 12px; font-weight: 550; }
+.model-progress-panel { margin-top: 29px; }
+.model-progress-copy, .model-progress-meta { display: flex; justify-content: space-between; gap: 16px; }
+.model-progress-copy { align-items: baseline; }
+.model-progress-copy span { color: var(--text); font-size: 12px; }
+.model-progress-copy strong { color: var(--accent); font: 500 25px "SF Mono", Menlo, monospace; }
+.model-progress-track { height: 8px; margin-top: 12px; overflow: hidden; background: var(--line-soft); }
+.model-progress-track span { display: block; width: 0; height: 100%; background: var(--accent); transition: width .18s ease; }
+.model-progress-meta { margin-top: 9px; color: var(--dim); font: 500 9px "SF Mono", Menlo, monospace; }
+.model-progress-file { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.model-error { margin-top: 20px; padding: 12px 14px; border-left: 3px solid #b42318; background: rgba(180,35,24,.07); color: #8f1d15; font-size: 11px; line-height: 1.65; }
+.model-setup-actions { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-top: auto; padding-top: 28px; }
+.model-setup-actions p { max-width: 310px; color: var(--dim); font-size: 10px; line-height: 1.65; }
+.model-setup-actions .btn-main { flex-shrink: 0; }
+.model-setup.is-ready .model-progress-track span { background: var(--green); }
+.model-setup.is-error .model-progress-track span { background: #b42318; }
+
+@media (max-width: 760px) {
+  .model-setup { padding: 18px; }
+  .model-setup-card { grid-template-columns: 1fr; min-height: 560px; }
+  .model-setup-index { min-height: 78px; flex-direction: row; align-items: flex-end; border-right: 0; }
+  .model-setup-index strong { font-size: 44px; }
+  .model-setup-content { padding: 30px 26px 26px; }
+  .model-setup-actions { align-items: stretch; flex-direction: column; }
+}

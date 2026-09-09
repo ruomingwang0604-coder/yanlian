@@ -152,6 +152,49 @@
     </aside>
   </div>
 
+  <div id="model-setup" class="model-setup hidden" role="dialog" aria-modal="true" aria-labelledby="model-setup-title">
+    <div class="model-setup-card">
+      <div class="model-setup-index" aria-hidden="true">
+        <span>LOCAL SPEECH ENGINE</span>
+        <strong>01</strong>
+      </div>
+      <div class="model-setup-content">
+        <span class="panel-eyebrow">FIRST LAUNCH SETUP</span>
+        <h1 id="model-setup-title">先准备本地语音模型</h1>
+        <p id="model-setup-description" class="model-setup-description">
+          言练需要约 226 MB 的语音识别文件。模型只下载一次，录音识别仍在你的电脑上完成。
+        </p>
+
+        <div class="model-facts" aria-label="模型下载说明">
+          <div><span>DOWNLOAD</span><strong>约 226 MB</strong></div>
+          <div><span>STORAGE</span><strong>本机保存</strong></div>
+          <div><span>VERIFY</span><strong>SHA-256</strong></div>
+        </div>
+
+        <div id="model-progress-panel" class="model-progress-panel hidden" aria-live="polite">
+          <div class="model-progress-copy">
+            <span id="model-progress-label">正在连接下载服务</span>
+            <strong id="model-progress-percent">0%</strong>
+          </div>
+          <div class="model-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="model-progress-bar"></span>
+          </div>
+          <div class="model-progress-meta">
+            <span id="model-progress-size">0 MB / 226 MB</span>
+            <span id="model-progress-file">准备下载</span>
+          </div>
+        </div>
+
+        <div id="model-error" class="model-error hidden" role="alert"></div>
+
+        <div class="model-setup-actions">
+          <p>下载时请保持网络连接。失败后可以继续重试，已经校验通过的文件不会重复下载。</p>
+          <button id="btn-download-model" class="btn-main btn-start" type="button">下载并开始使用</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="topic-modal" class="modal topic-modal hidden" role="dialog" aria-modal="true" aria-labelledby="topic-modal-title">
     <div class="modal-content topic-modal-content">
       <header class="topic-modal-header">

@@ -15,12 +15,14 @@ const requiredFiles = [
   'docs/ROADMAP.md',
   'docs/REPOSITORY.md',
   'docs/iterations/TEMPLATE.md',
-  'docs/iterations/2026-09-07-report-loop-v1.1.md'
+  'docs/iterations/2026-09-07-report-loop-v1.1.md',
+  'docs/iterations/2026-09-09-model-onboarding-v1.7.md'
 ];
 const javascriptFiles = [
   'main.js',
   'preload.js',
   'lib/asr.js',
+  'lib/model-manager.js',
   'lib/lexicon.js',
   'lib/ai-feedback.js',
   'lib/prompts.js',
@@ -69,11 +71,13 @@ if (
 } else {
   fail('言练应用名称、包名或 appId 配置不完整');
 }
-if (packageJson.build?.extraResources?.some(item => String(item.from || '').startsWith('models/'))) {
-  pass('安装包包含本地语音模型资源');
+if (!packageJson.build?.extraResources?.some(item => String(item.from || '').startsWith('models/'))) {
+  pass('安装包不再内置大体积语音模型');
 } else {
-  fail('安装包未配置本地语音模型资源');
+  fail('安装包仍在内置大体积语音模型');
 }
+if (packageJson.scripts?.test === 'node --test') pass('模型下载模块测试命令已配置');
+else fail('缺少模型下载模块测试命令');
 const packageLock = JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8'));
 if (packageJson.version === packageLock.version && packageJson.version === packageLock.packages?.['']?.version) {
   pass(`版本一致 ${packageJson.version}`);

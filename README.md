@@ -37,7 +37,7 @@
 
 当前测试包尚未经过 Apple 签名和公证，首次打开时 macOS 可能提示无法验证开发者。正式公开分发前会继续处理签名、公证和首次启动引导。
 
-当前安装包内置本地语音识别模型，因此文件体积较大；后续版本将改为首次启动时按需下载。
+安装包不再内置大体积语音模型。首次打开时，“言练”会引导下载约 226 MB 的本地识别文件，显示下载进度并执行 SHA-256 完整性校验；失败后可以重试，已校验文件不会重复下载。
 
 ### 开发者：从源码运行
 
@@ -47,7 +47,13 @@ cd yanlian
 npm install
 ```
 
-下载 Sherpa-ONNX streaming paraformer 中英双语模型：
+直接启动开发版。如果仓库 `models/` 中没有完整模型，首次打开界面会自动进入模型准备流程：
+
+```bash
+npm start
+```
+
+也可以提前手动下载 Sherpa-ONNX streaming paraformer 中英双语模型：
 
 ```bash
 cd models
@@ -66,19 +72,15 @@ models/
     └── tokens.txt
 ```
 
-启动开发版：
-
-```bash
-npm start
-```
-
 构建 Apple Silicon macOS 测试安装包：
 
 ```bash
 npm run dist:mac
 ```
 
-构建结果输出到 `dist/`。构建前需要确保上述模型目录完整。
+构建结果输出到 `dist/`。构建安装包时不需要提前下载模型。
+
+安装版下载的模型保存在当前用户的应用数据目录中，不会写入应用程序本体。也可以通过 `YANLIAN_MODELS_DIR` 环境变量指定自定义模型根目录。
 
 ### 配置 AI 后端
 
@@ -183,4 +185,3 @@ npm run dev
 ## License
 
 MIT
-

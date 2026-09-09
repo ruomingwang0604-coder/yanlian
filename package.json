@@ -1,7 +1,7 @@
 {
   "name": "yanlian-desktop",
   "productName": "言练",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "言练：面向中文演讲与口语表达训练的桌面应用",
   "main": "main.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "dev": "electron . --dev",
     "check": "node scripts/check-project.js",
     "pack:mac": "electron-builder --dir --mac --arm64",
-    "dist:mac": "electron-builder --mac dmg --arm64"
+    "dist:mac": "electron-builder --mac dmg --arm64",
+    "test": "node --test"
   },
   "keywords": [
     "expression",
@@ -66,15 +67,6 @@
       "NOTICE.md",
       "THIRD_PARTY_NOTICES.md",
       "licenses/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "models/sherpa-onnx-streaming-paraformer-bilingual-zh-en",
-        "to": "models/sherpa-onnx-streaming-paraformer-bilingual-zh-en",
-        "filter": [
-          "**/*"
-        ]
-      }
     ],
     "mac": {
       "target": [

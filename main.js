@@ -1,7 +1,8 @@
-const { app, BrowserWindow, ipcMain, session, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, session, Menu, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { initASR, feedAudio, stopRecognition } = require('./lib/asr');
+const { MODEL_ID, ModelManager } = require('./lib/model-manager');
 const { loadLexicon, analyzeText } = require('./lib/lexicon');
 const { sendFeedback, sendReport, testConnection } = require('./lib/ai-feedback');
 
@@ -12,6 +13,31 @@ let mainWindow;
 let settingsWindow;
 let promptEditorWindow;
 let asrReady = false;
+let modelManager;
+
+function getModelsRoot() {
+  if (process.env.YANLIAN_MODELS_DIR) return path.resolve(process.env.YANLIAN_MODELS_DIR);
+
+  const developmentModelsRoot = path.join(__dirname, 'models');
+  const developmentModelDir = path.join(developmentModelsRoot, MODEL_ID);
+  if (!app.isPackaged && fs.existsSync(developmentModelDir) && !process.env.YANLIAN_FORCE_MODEL_SETUP) {
+    return developmentModelsRoot;
+  }
+
+  return path.join(app.getPath('userData'), 'models');
+}
+
+function createModelManager() {
+  modelManager = new ModelManager({
+    modelsRoot: getModelsRoot(),
+    fetchImpl: (url, options) => net.fetch(url, options)
+  });
+  modelManager.on('progress', progress => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('model-download-progress', progress);
+    }
+  });
+}
 
 // Custom prompt 文件路径
 function getCustomPromptPath() {
@@ -206,6 +232,7 @@ app.whenReady().then(() => {
 
   // 加载词库
   loadLexicon();
+  createModelManager();
 
   createMainWindow();
 
@@ -258,9 +285,30 @@ ipcMain.handle('close-current-window', (event) => {
 });
 
 // 语音识别相关 - Web Audio方案
+ipcMain.handle('get-model-status', async () => {
+  try {
+    return await modelManager.getStatus({ verify: true });
+  } catch (error) {
+    return { ready: false, state: 'error', error: error.message };
+  }
+});
+
+ipcMain.handle('download-model', async () => {
+  try {
+    const status = await modelManager.download();
+    return { success: true, ...status };
+  } catch (error) {
+    return { success: false, ready: false, state: 'error', error: error.message };
+  }
+});
+
 ipcMain.handle('init-asr', async () => {
   try {
-    await initASR();
+    const modelStatus = await modelManager.getStatus();
+    if (!modelStatus.ready) {
+      return { success: false, code: 'MODEL_REQUIRED', error: '需要先下载本地语音识别模型' };
+    }
+    await initASR(modelManager.modelDir);
     asrReady = true;
     return { success: true };
   } catch (error) {

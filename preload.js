@@ -23,6 +23,16 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.removeAllListeners('asr-result');
   },
 
+  // 本地语音模型
+  getModelStatus: () => ipcRenderer.invoke('get-model-status'),
+  downloadModel: () => ipcRenderer.invoke('download-model'),
+  onModelDownloadProgress: (callback) => {
+    ipcRenderer.on('model-download-progress', (event, data) => callback(data));
+  },
+  removeModelDownloadListener: () => {
+    ipcRenderer.removeAllListeners('model-download-progress');
+  },
+
   // 词库分析
   analyzeText: (text) => ipcRenderer.invoke('analyze-text', text),
 

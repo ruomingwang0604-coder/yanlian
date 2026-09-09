@@ -26,11 +26,15 @@ class ExpressionTrainer {
     this.preparationStartedAt = null;
     this.currentChallenge = null;
     this.challengeAutoStopping = false;
+    this.modelReady = false;
+    this.modelDownloadActive = false;
+    this.pendingRecording = null;
 
     this.initElements();
     this.bindEvents();
     this.setAppState('idle');
     this.updateSessionMeta();
+    this.initializeModelSetup();
   }
 
   initElements() {
@@ -104,6 +108,17 @@ class ExpressionTrainer {
     this.statDensity = document.getElementById('stat-density');
     this.wordCount = document.getElementById('word-count');
     this.sentenceCount = document.getElementById('sentence-count');
+    this.modelSetup = document.getElementById('model-setup');
+    this.modelSetupDescription = document.getElementById('model-setup-description');
+    this.modelProgressPanel = document.getElementById('model-progress-panel');
+    this.modelProgressLabel = document.getElementById('model-progress-label');
+    this.modelProgressPercent = document.getElementById('model-progress-percent');
+    this.modelProgressTrack = this.modelProgressPanel.querySelector('.model-progress-track');
+    this.modelProgressBar = document.getElementById('model-progress-bar');
+    this.modelProgressSize = document.getElementById('model-progress-size');
+    this.modelProgressFile = document.getElementById('model-progress-file');
+    this.modelError = document.getElementById('model-error');
+    this.btnDownloadModel = document.getElementById('btn-download-model');
   }
 
   bindEvents() {
@@ -137,6 +152,8 @@ class ExpressionTrainer {
     this.btnSaveText.addEventListener('click', () => this.saveOriginalText());
     this.btnClear.addEventListener('click', () => this.clearAll());
     this.btnPracticeAgain.addEventListener('click', () => this.startPracticeAgain());
+    this.btnDownloadModel.addEventListener('click', () => this.downloadModel());
+    window.api.onModelDownloadProgress(progress => this.renderModelProgress(progress));
 
     this.btnCopyReport.addEventListener('click', () => {
       const reportText = this.lastReport || this.reportBody.innerText;
@@ -153,6 +170,108 @@ class ExpressionTrainer {
     });
 
     document.addEventListener('keydown', event => this.handleKeyboardShortcut(event));
+  }
+
+  // ===== 首次启动模型准备 =====
+
+  async initializeModelSetup() {
+    this.showModelSetup('checking');
+    try {
+      const status = await window.api.getModelStatus();
+      if (status.ready) {
+        this.modelReady = true;
+        this.modelSetup.classList.add('hidden');
+        this.setAppState('idle', '本地语音模型已就绪');
+        return;
+      }
+      if (status.state === 'error') {
+        this.showModelSetup('error', status.error || '无法检查本地语音模型');
+        return;
+      }
+      this.showModelSetup('missing');
+    } catch (error) {
+      this.showModelSetup('error', error?.message || '无法检查本地语音模型');
+    }
+  }
+
+  showModelSetup(state = 'missing', errorMessage = '') {
+    this.modelSetup.classList.remove('hidden', 'is-ready', 'is-error');
+    this.modelError.classList.add('hidden');
+    this.modelProgressPanel.classList.toggle('hidden', !['checking', 'downloading', 'verifying', 'ready', 'error'].includes(state));
+
+    if (state === 'checking') {
+      this.modelSetupDescription.textContent = '正在检查本地语音识别文件，首次启动可能需要下载模型。';
+      this.btnDownloadModel.disabled = true;
+      this.btnDownloadModel.textContent = '正在检查…';
+      this.renderModelProgress({ state: 'checking', percent: 0, completedBytes: 0, totalBytes: 237202501, message: '正在检查本地文件' });
+    } else if (state === 'missing') {
+      this.modelSetupDescription.textContent = '言练需要约 226 MB 的语音识别文件。模型只下载一次，录音识别仍在你的电脑上完成。';
+      this.btnDownloadModel.disabled = false;
+      this.btnDownloadModel.textContent = '下载并开始使用';
+    } else if (state === 'error') {
+      this.modelSetup.classList.add('is-error');
+      this.modelError.textContent = errorMessage;
+      this.modelError.classList.remove('hidden');
+      this.btnDownloadModel.disabled = false;
+      this.btnDownloadModel.textContent = '重新下载';
+    }
+  }
+
+  async downloadModel() {
+    if (this.modelDownloadActive) return;
+    this.modelDownloadActive = true;
+    this.showModelSetup('downloading');
+    this.btnDownloadModel.disabled = true;
+    this.btnDownloadModel.textContent = '正在下载…';
+
+    try {
+      const result = await window.api.downloadModel();
+      if (!result.success || !result.ready) throw new Error(result.error || '模型下载未完成');
+      this.modelReady = true;
+      this.renderModelProgress({
+        state: 'ready',
+        percent: 100,
+        completedBytes: result.totalBytes,
+        totalBytes: result.totalBytes,
+        message: '语音模型已准备完成'
+      });
+      this.modelSetup.classList.add('is-ready');
+      this.btnDownloadModel.textContent = '准备完成';
+      this.setAppState('idle', '本地语音模型已就绪');
+
+      const pending = this.pendingRecording;
+      this.pendingRecording = null;
+      setTimeout(() => {
+        this.modelSetup.classList.add('hidden');
+        if (pending) this.startRecording(pending.practiceGoal, pending.options);
+      }, 650);
+    } catch (error) {
+      this.showModelSetup('error', `下载失败：${error?.message || '请检查网络连接后重试'}`);
+    } finally {
+      this.modelDownloadActive = false;
+    }
+  }
+
+  renderModelProgress(progress = {}) {
+    const totalBytes = progress.totalBytes || 237202501;
+    const completedBytes = Math.min(progress.completedBytes || 0, totalBytes);
+    const percent = Number.isFinite(progress.percent)
+      ? Math.max(0, Math.min(100, progress.percent))
+      : Math.round((completedBytes / totalBytes) * 1000) / 10;
+
+    this.modelProgressPanel.classList.remove('hidden');
+    this.modelProgressLabel.textContent = progress.message || '正在准备语音模型';
+    this.modelProgressPercent.textContent = `${percent.toFixed(percent % 1 ? 1 : 0)}%`;
+    this.modelProgressBar.style.width = `${percent}%`;
+    this.modelProgressTrack.setAttribute('aria-valuenow', String(Math.round(percent)));
+    this.modelProgressSize.textContent = `${this.formatMegabytes(completedBytes)} / ${this.formatMegabytes(totalBytes)}`;
+    this.modelProgressFile.textContent = progress.fileName || (progress.state === 'verifying' ? '校验文件' : '准备下载');
+
+    if (progress.state === 'error') this.showModelSetup('error', progress.message || '下载失败，请重试');
+  }
+
+  formatMegabytes(bytes) {
+    return `${(bytes / 1024 / 1024).toFixed(bytes ? 1 : 0)} MB`;
   }
 
   handleKeyboardShortcut(event) {
@@ -174,7 +293,8 @@ class ExpressionTrainer {
     const modalOpen = !this.pasteModal.classList.contains('hidden')
       || !this.reportModal.classList.contains('hidden')
       || !this.topicModal.classList.contains('hidden')
-      || !this.challengeNotesModal.classList.contains('hidden');
+      || !this.challengeNotesModal.classList.contains('hidden')
+      || !this.modelSetup.classList.contains('hidden');
     if (event.code !== 'Space' || isTyping || modalOpen || event.metaKey || event.ctrlKey || event.altKey) return;
 
     event.preventDefault();
@@ -273,6 +393,11 @@ class ExpressionTrainer {
 
   async startRecording(practiceGoal = '', options = {}) {
     if (['initializing', 'listening', 'paused', 'stopping'].includes(this.appState)) return;
+    if (!this.modelReady) {
+      this.pendingRecording = { practiceGoal, options };
+      this.showModelSetup('missing');
+      return;
+    }
 
     this.activePracticeGoal = practiceGoal;
     if (options.challenge) {
